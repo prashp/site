@@ -1,0 +1,322 @@
+<html>
+<head>
+<title>Basic addition and subtraction practice problems generator </title>
+<style type="text/css">
+table.problem {
+	border-width: 2px;
+	border-spacing: 2px;
+	border-style: outset;
+	border-color: black;
+	border-collapse: separate;
+	background-color: white;
+}
+table.problem th {
+	border-width: 1px;
+	padding: 1px;
+	border-style: none;
+	border-color: gray;
+	background-color: white;
+}
+table.problem td {
+	border-width: 1px;
+	padding: 1px;
+	border-style: none;
+	border-color: gray;
+	background-color: white;
+}
+input[type="text"].answer {
+  text-align: right;
+}
+
+table.options {
+	border-width: 2px;
+	border-spacing: 2px;
+	border-style: outset;
+	border-color: gray;
+	border-collapse: collapse;
+	background-color: white;
+}
+
+table.sample th {
+	border-width: 2px;
+	padding: 2px;
+	border-style: solid;
+	border-color: black;
+	background-color: white;
+}
+
+table.options td {
+	border-width: 2px;
+	padding: 2px;
+	border-style: solid;
+	border-color: black;
+	background-color: white;
+}
+
+</style>
+
+<script type="text/javascript">
+
+function Problems(rows, cols, ops, carry, borrow, digits, rtl, mins) {
+  var _operations = ops;
+  var _maxDigits = digits;
+  var _carry = carry;
+  var _borrow = borrow;
+  var _rows = rows;
+  var _cols = cols;
+  var _ticks = mins * 60;
+  var _timer;
+  var _rtl = rtl;
+
+  this.generate = function() {
+    console.log("generate");
+    var t, r, c, i, j, x;
+    t = document.createElement('table');
+    t.setAttribute('name', 'problems-table');
+    t.setAttribute('class', 'problems-table');
+    t.setAttribute('id', 'problems-table');
+    for (i=0; i<_rows; i++) {
+      r = t.insertRow(-1);
+      for (j=0; j<_cols; j++) {
+        c = r.insertCell(-1);
+        x = generateProblem(i, j);
+        c.appendChild(x);
+      }
+    }
+    if (_ticks > 0) _timer = setInterval(this.timer, 1000);
+    return t;
+  }
+
+  this.timer = function() {
+    _ticks--;
+    document.getElementById("counter").innerHTML="<font color='red'>" + _ticks+"</font><br/>";
+    if (_ticks <= 0) {
+      clearInterval(_timer);
+      checkAnswers();
+    }
+  }
+
+  var generateProblem = function(row, col) {
+    var t, r, c, op1, op2, op, h;
+    op = _operations[Math.floor(Math.random() * _operations.length)];
+    op1 = getop1();
+    op2 = getop2(op, op1);
+    console.log("op:" + op + " op1:" + op1 + " op2:" + op2);
+
+    t = document.createElement('table');
+    t.setAttribute('name', row.toString() + '_' + col.toString());
+    t.setAttribute('class', 'problem');
+    // first row
+    r = t.insertRow(-1);
+    c = r.insertCell(-1);
+    c.innerHTML = op2html(op1, "");
+
+    // second row
+    r = t.insertRow(-1);
+    c = r.insertCell(-1);
+    c.innerHTML = op2html(op2, op);
+
+    // answer row
+    r = t.insertRow(-1);
+    c = r.insertCell(-1);
+
+    h = "<input type='text' name='" + answer(op, op1, op2) + "' size='" + (_maxDigits+1) + "' maxLength='" + (_maxDigits+1) + "' class='answer' " 
+    if (_rtl == 1) h = h + " onkeyup='rtl(this, event);' ";
+    h = h + "/>";
+
+    c.innerHTML = h;
+    return t;
+  }
+
+  var getop1 = function() {
+    var i, digits;
+    digits = [];
+    for (i=0; i<_maxDigits; i++) {
+      digits[i] = '' + ( Math.floor(Math.random() * 10) );
+    }
+    return digits;
+  }
+
+  var getop2 = function(op, op1) {
+    var i, n, digits;
+    digits = [];
+    for (i=0; i<_maxDigits; i++) {
+      switch(op) {
+        case '+' :
+          digits[i] = Math.floor(Math.random() * ( _carry ? 10 : (10 - op1[i]) ) );
+          break;
+        case '-' : 
+          digits[i] = Math.floor(Math.random() * ( _borrow ? 10 : op1[i] ) );
+          console.log("n:" + digits[i] + " op1i:" + op1[i]);
+          break;
+        case '*' :
+          digits[i] = '1';
+          break
+        case '/' :
+            digits[i] = '1';
+            break;
+      }
+    }
+    return digits;
+  }
+
+
+  var answer = function(op, op1, op2) {
+    var o1 = parseInt(op1.join(""));
+    var o2 = parseInt(op2.join(""));
+    switch(op) {
+      case '+' : return o1 + o2;
+      case '-' : return o1 - o2;
+      case '*' : return o1 * o2;
+      case '/' : return o1 / o2;
+      default  : return -1;
+    }
+  }
+
+  var op2html = function(operand, operation) {
+    // calculate spaces to be prepended
+    var s = "<pre>" + (operation == "" ? "&nbsp;" : operation);
+    s = s + "&nbsp;" + operand.join("") + "</pre>";
+    return s;
+  }
+
+  var insertCells = function(row, count, val) {
+    var i, cell;
+    for (i=0; i<count; i++) {
+      cell = row.insertCell(-1);
+      cell.innerHTML = val;
+    }
+  }
+
+  var getMaxWidth = function() {
+    var w1 = _operand1.toString().length;
+    var w2 = _operand2.toString().length;
+    return ( w1 > w2 ? w1 : w2 );
+  }
+
+}
+
+function Timer(mins, element) {
+  var _element = element;
+  var _timer;
+ 
+}
+
+function readOperations() {
+  var a, ops=[];
+  a = document.getElementById("add");
+  if (a.checked) ops[ops.length] = '+';
+  a = document.getElementById("sub");
+  if (a.checked) ops[ops.length] = '-';
+  return ops;
+}
+
+function generateProblems() {
+  var problems, d, t, n, x, rtl;
+  n = parseInt(document.getElementById("digits").value);
+  rtl = parseInt(document.getElementById("rtl").value);
+  x = parseInt(document.getElementById("timer").value);
+  problems = new Problems(10, 10, readOperations(), 
+      document.getElementById("addcarry").checked,
+      document.getElementById("subborrow").checked, n, rtl, x);
+  t = problems.generate();
+  d = document.getElementById('problems-table');
+  if (d) {
+    d.parentNode.replaceChild(t, d);
+  } else {
+    d = document.getElementById('problems');
+    d.appendChild(t);
+  }
+}
+
+function checkAnswers() {
+  var elements = document.getElementsByTagName("input");
+  var i, n1, n2;
+  for (i=0; i<elements.length; i++) {
+    if (elements[i].getAttribute("type") == "text") {
+      n1 = parseInt(elements[i].value);
+      n2 = parseInt(elements[i].getAttribute("name"));
+      elements[i].style.backgroundColor = (n1 == n2 ? "#99FF33" : "#FF9999");
+    }
+  }
+}
+
+function rtl(element, evt) {   
+  var kcode = (evt.which) ? evt.which : event.keyCode
+  if (kcode == 8 || kcode == 46) {
+    element.value = "";
+    return;
+  } else if (kcode < 48 || kcode > 90) {
+    return;
+  }
+  if(element.setSelectionRange) element.setSelectionRange(0,0);
+}
+
+
+</script>
+</head>
+<body>
+<title>Basic addition and subtraction practice problems generator </title>
+<p>
+A simple worksheet generator for addition and subtraction problems. 
+
+</p>
+<hr/>
+<table class="options">
+  <tr>
+    <td> 
+      Addition(+)<br/>
+      <input type="checkbox" name="operation" id="add" checked/> Enable <br/>
+      <input type="checkbox" name="operation" id="addcarry"/> Allow Carryovers <br/>
+    </td>
+    <td> 
+      Subtraction(-)<br/>
+      <input type="checkbox" name="operation" id="sub"/> Enable <br/> 
+      <input type="checkbox" name="operation" id="subborrow"/> Allow Borrowing <br/> 
+    </td>
+    <td> 
+      How many digits:<br/>
+      <select id="digits">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+      </br>
+      Answer input direction:<br/>
+      <select id="rtl">
+        <option value="1">Right to Left</option>
+        <option value="0">Left to Right</option>
+      </select>
+      </br>
+    </td>
+    <td> 
+      Timer: <br/>
+      <select id="timer">
+        <option value="0">Disabled</option>
+        <option value="1">1 min</option>
+        <option value="2">2 mins</option>
+        <option value="3">3 mins</option>
+        <option value="4">4 mins</option>
+        <option value="5">5 mins</option>
+      </select>
+      </br>
+      <div id="counter"><br/></div>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <input type="button" onclick="generateProblems()" value="Begin Test"/>
+    </td>
+    <td>
+      <input type="button" onclick="checkAnswers()" value="Score Test"/>
+    </td>
+  </tr>
+</table>
+<hr/>
+
+<div id="problems"/>
+
+</body>
+</html>
+
+
